@@ -1,0 +1,18 @@
+--- REGISTRO DE FORMULARIO CLARO ---
+URL de Prueba: https://www.claro.com.co/personas/contratar-servicios-hogar/
+Hora de inicio: 2025-11-19 14:49:01
+
+--- ESTADO DEL LLENADO DE CAMPOS ---
+[1] Tipo: select | Selector: 'select' | Valor: 'Tripleplay' | Estado: OK (Seleccionado)
+[2] Tipo: select | Selector: 'select' | Valor: 'Bogota' | Estado: OK (Seleccionado)
+[3] Tipo: input_char | Selector: 'phoneNumber' | Valor: '3001234567' | Estado: OK (Llenado)
+[4] Tipo: check | Selector: 'auth' | Valor: 'True' | Estado: OK (Marcado: True)
+[5] Tipo: boton | Selector: 'btn btnPrimario' | Valor: '' | Estado: OK (Identificado para envío)
+--- FIN DEL LLENADO DE CAMPOS ---
+
+--- RESULTADO DEL ENVÍO ---
+📡 ESTATUS HTTP CAPTURADO: 200
+🆔 ID ENCONTRADO EN PÁGINA: 1767241
+ℹ️ URL ACTUAL: https://www.claro.com.co/personas/contratar-servicios-hogar/
+*** RESULTADO FINAL: ID=1767241 | STATUS=200 ***
+---------------------------------

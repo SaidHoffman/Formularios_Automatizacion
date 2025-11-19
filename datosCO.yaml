@@ -1,0 +1,18 @@
+url: "https://www.claro.com.co/personas/contratar-servicios-hogar/"
+campos:
+  - tipo: select
+    selector: "select"
+    valor: "Tripleplay"
+  - tipo: select
+    selector: "select"
+    valor: "Bogota"
+  - tipo: input_char
+    selector: "phoneNumber"
+    valor: "3001234567"
+  - tipo: check
+    selector: "auth"
+    valor: true
+  - tipo: boton
+    selector: "btn btnPrimario"
+    valor: ""
+    
