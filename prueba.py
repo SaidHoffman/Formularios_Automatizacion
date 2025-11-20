@@ -4,6 +4,7 @@ import sys
 import os
 from playwright.async_api import async_playwright
 from datetime import datetime
+from urllib.parse import urlparse
 
 # Parse command-line arguments
 if len(sys.argv) >= 2:
@@ -89,58 +90,174 @@ async def fill_form(page, fields, log_entries):
     captured_id = None
     possible_keys = ['id', 'requestId', 'solicitudId', 'numeroSolicitud', 'orderId']
     boton_field = next((f for f in fields if f.get('tipo') == 'boton'), None)
+    
     if not boton_field:
         log_entries.append("[WARN] No se encontró botón de envío en la configuración.")
     else:
         boton_selector = boton_field.get('selector')
+        print(f"[DEBUG] Selector del botón: {boton_selector}")
+        
         try:
-            async with page.expect_response(lambda r: r.request.method in ["POST", "PUT"] and r.request.resource_type in ["xhr", "fetch"]) as resp_info:
-                await page.click(boton_selector, timeout=5000)
-            resp = resp_info.value
-            captured_status = resp.status
-            print(resp_info.value)
-            log_entries.append(f"[STATUS] ESTATUS HTTP CAPTURADO: {captured_status}")
-            try:
-                body = await resp.json()
-                if isinstance(body, dict):
-                    for key in possible_keys:
-                        if key in body:
-                            captured_id = body[key]
-                            log_entries.append(f"[ID] ID ENCONTRADO EN API ({key}): {captured_id}")
-                            break
-                    if not captured_id:
-                        log_entries.append(f"[INFO] JSON recibido sin ID claro: {body}")
-                else:
-                    log_entries.append("[INFO] Respuesta JSON no es un dict.")
-            except Exception:
-                log_entries.append("[INFO] Respuesta sin cuerpo JSON legible.")
+            await page.wait_for_selector(boton_selector, state='visible', timeout=15000)
         except Exception as e:
-            log_entries.append(f"[ERROR] Error al hacer click o capturar respuesta: {e}")
+            log_entries.append(f"[ERROR] Botón no visible: {e}")
+            captured_status = None
+            captured_id = None
+        else:
+            # Capturar URL inicial antes del envío
+            initial_url = page.url
+            
+            # Capturar todas las respuestas durante el click
+            responses_captured = []
+            
+            def capture_response(response):
+                responses_captured.append({
+                    'url': response.url,
+                    'status': response.status,
+                    'method': response.request.method,
+                    'type': response.request.resource_type,
+                    'response': response
+                })
+                print(f"[DEBUG] Capturada: {response.request.method} {response.url} [{response.status}] ({response.request.resource_type})")
+            
+            page.on("response", capture_response)
+            
+            try:
+                # Hacer click y esperar a que se procesen las respuestas
+                await page.click(boton_selector, timeout=20000)
+                await page.wait_for_timeout(3000)  # Esperar 3 segundos para capturar respuestas
+                
+                # Verificar si hubo cambio de URL
+                final_url = page.url
+                url_changed = initial_url != final_url
+                
+                if url_changed:
+                    log_entries.append(f"[SUCCESS] URL cambió después del envío")
+                    log_entries.append(f"  Inicial: {initial_url}")
+                    log_entries.append(f"  Final: {final_url}")
+                
+                # Filtrar tracking pixels y recursos estáticos
+                tracking_domains = [
+                    'facebook.com', 'google-analytics.com', 'doubleclick.net', 
+                    'googletagmanager.com', 'analytics.google.com', 'tiktok', 
+                    'hotjar.com', 'clarity.ms', 'mixpanel.com', 'segment.com',
+                    'amplitude.com', 'heap.io', 'google.com/pagead', 'google.com/ads',
+                    'ads.google.com'
+                ]
+                static_types = ['stylesheet', 'script', 'image', 'font', 'media']
+                
+                filtered_responses = []
+                for resp_data in responses_captured:
+                    # Skip tracking pixels
+                    if any(domain in resp_data['url'] for domain in tracking_domains):
+                        continue
+                    # Skip static resources
+                    if resp_data['type'] in static_types:
+                        continue
+                    filtered_responses.append(resp_data)
+                
+                # Get the form's domain for prioritization
+                form_domain = urlparse(page.url).netloc
+                
+                # Buscar la respuesta más relevante con prioridades:
+                # 1. POST/PUT del mismo dominio
+                # 2. POST/PUT de cualquier dominio
+                # 3. Cualquier respuesta del mismo dominio
+                # 4. Cualquier otra respuesta
+                relevant_response = None
+                
+                # Priority 1: POST/PUT from same domain
+                for resp_data in filtered_responses:
+                    resp_domain = urlparse(resp_data['url']).netloc
+                    if resp_data['method'] in ['POST', 'PUT'] and resp_domain == form_domain:
+                        relevant_response = resp_data
+                        break
+                
+                # Priority 2: Any POST/PUT
+                if not relevant_response:
+                    for resp_data in filtered_responses:
+                        if resp_data['method'] in ['POST', 'PUT']:
+                            relevant_response = resp_data
+                            break
+                
+                # Priority 3: Any response from same domain
+                if not relevant_response:
+                    for resp_data in filtered_responses:
+                        resp_domain = urlparse(resp_data['url']).netloc
+                        if resp_domain == form_domain:
+                            relevant_response = resp_data
+                            break
+                
+                # Priority 4: Any other response
+                if not relevant_response and filtered_responses:
+                    relevant_response = filtered_responses[0]
+                
+                if relevant_response:
+                    captured_status = relevant_response['status']
+                    print(f"[DEBUG] Response seleccionada: {relevant_response['method']} {relevant_response['url']} [{captured_status}]")
+                    log_entries.append(f"[STATUS] ESTATUS HTTP CAPTURADO: {captured_status} ({relevant_response['method']} {relevant_response['url']})")
+                    
+                    try:
+                        body = await relevant_response['response'].json()
+                        if isinstance(body, dict):
+                            for key in possible_keys:
+                                if key in body:
+                                    captured_id = body[key]
+                                    log_entries.append(f"[ID] ID ENCONTRADO EN API ({key}): {captured_id}")
+                                    break
+                            if not captured_id:
+                                log_entries.append(f"[INFO] JSON recibido sin ID claro: {body}")
+                        else:
+                            log_entries.append("[INFO] Respuesta JSON no es un dict.")
+                    except Exception:
+                        log_entries.append("[INFO] Respuesta sin cuerpo JSON legible.")
+                else:
+                    log_entries.append(f"[WARN] No se capturó ninguna respuesta relevante. Total capturadas: {len(responses_captured)}, Filtradas: {len(filtered_responses)}")
+                    
+            except Exception as e:
+                log_entries.append(f"[ERROR] Error al hacer click: {e}")
+                captured_status = None
+            finally:
+                page.remove_listener("response", capture_response)
 
     # Análisis visual de la página si aún no hay ID
     if not captured_id:
         try:
             import re
-            match = re.search(r'(?:Solicitud|Pedido|Orden)\s*[:#]?\s*(\w+)', await page.inner_text('body'), re.IGNORECASE)
+            page_text = await page.inner_text('body')
+            # Buscar patrones de ID en el texto de la página
+            match = re.search(r'(?:Solicitud|Pedido|Orden|Request|Ticket|Folio|Número|Number)[:\s#]*([A-Z0-9\-]{6,})', page_text, re.IGNORECASE)
             if match:
                 captured_id = match.group(1)
                 log_entries.append(f"[ID] ID ENCONTRADO EN PÁGINA: {captured_id}")
         except Exception:
             pass
-    error_sel = '.error-message'
-    success_sel = 'i.ico-check-circle'
-    if await page.locator(error_sel).is_visible():
-        err_text = await page.locator(error_sel).inner_text()
-        log_entries.append(f"[ERROR] ERROR EN LA PÁGINA: {err_text.strip()}")
-    elif await page.locator(success_sel).first.is_visible():
-        #suc_text = await page.locator(success_sel)
-        log_entries.append(f"[SUCCESS] ÉXITO EN LA PÁGINA POR NÚMERO DE PETICION DETECTADO")
-    else:
-        current_url = page.url
-        if "gracias" in current_url.lower() or "confirmacion" in current_url.lower():
-            log_entries.append(f"✅ PÁGINA DE ÉXITO DETECTADA POR URL: {current_url}")
+    
+    # Buscar indicadores de éxito en la página
+    error_sel = '.error-message, .alert-danger, [class*="error"]'
+    success_sel = 'i.ico-check-circle, .alert-success, .success-message, [class*="success"]'
+    
+    try:
+        if await page.locator(error_sel).first.is_visible():
+            err_text = await page.locator(error_sel).first.inner_text()
+            log_entries.append(f"[ERROR] ERROR EN LA PÁGINA: {err_text.strip()}")
+        elif await page.locator(success_sel).first.is_visible():
+            success_text = await page.locator(success_sel).first.inner_text()
+            log_entries.append(f"[SUCCESS] ÉXITO EN LA PÁGINA: {success_text.strip()}")
         else:
-            log_entries.append(f"ℹ️ URL ACTUAL: {current_url}")
+            current_url = page.url
+            # Buscar keywords de éxito en la URL o contenido
+            success_keywords = ['gracias', 'thank', 'confirmacion', 'confirmation', 'exito', 'success', 'completado', 'complete']
+            page_text_lower = (await page.inner_text('body')).lower()
+            
+            if any(keyword in current_url.lower() for keyword in success_keywords):
+                log_entries.append(f"✅ PÁGINA DE ÉXITO DETECTADA POR URL: {current_url}")
+            elif any(keyword in page_text_lower for keyword in success_keywords):
+                log_entries.append(f"✅ MENSAJE DE ÉXITO DETECTADO EN CONTENIDO")
+            else:
+                log_entries.append(f"ℹ️ URL ACTUAL: {current_url}")
+    except Exception as e:
+        log_entries.append(f"[WARN] Error al verificar indicadores de éxito: {e}")
 
     if captured_id:
         log_entries.append(f"*** RESULTADO FINAL: ID={captured_id} | STATUS={captured_status if captured_status else 'N/A'} ***")

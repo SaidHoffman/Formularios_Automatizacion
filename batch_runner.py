@@ -50,7 +50,7 @@ def process_url(country_code, url, scan_only=False):
         print(f">> Escaneando formulario (no existe config)...")
         try:
             result = subprocess.run(
-                ['python3', 'scanner.py', url, config_file],
+                [sys.executable, 'scanner.py', url, config_file],
                 capture_output=True,
                 text=True,
                 timeout=60
@@ -69,13 +69,15 @@ def process_url(country_code, url, scan_only=False):
     if not scan_only:
         print(f">> Ejecutando automatización del formulario...")
         try:
+            print("entre al try en batch_runner")
             result = subprocess.run(
-                ['python3', 'prueba.py', config_file, log_file],
+                [sys.executable, 'prueba.py', config_file, log_file],
                 capture_output=True,
                 text=True,
                 timeout=120
             )
             if result.returncode != 0:
+                print("entre al if y result.returncode != 0")
                 print(f"[WARN] Advertencia al ejecutar: {result.stderr}")
             print(f"[OK] Log generado: {log_file}")
             return True

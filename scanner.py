@@ -158,27 +158,61 @@ async def scan_form(url, output_yaml_path):
                 except Exception as e:
                     print(f"  [WARN] Error al procesar checkbox: {e}")
             
-            # 4. Detect SUBMIT button
-            buttons = await form.locator('button[type="submit"], button.btn, input[type="submit"], button:has-text("Enviar"), button:has-text("Solicitar")').all()
+            # 4. Detect SUBMIT button - try multiple strategies
+            btn_selector = None
+            btn_text = ""
+            
+            # Strategy 1: Look for explicit submit buttons
+            buttons = await form.locator('button[type="submit"], input[type="submit"]').all()
+            if not buttons:
+                # Strategy 2: Look for buttons with common submit classes
+                buttons = await form.locator('button.btn, button.btnPrimario, button.submit, button[class*="submit"]').all()
+            if not buttons:
+                # Strategy 3: Look for buttons with submit-related text
+                buttons = await form.locator('button:has-text("Enviar"), button:has-text("Solicitar"), button:has-text("Submit"), button:has-text("Continuar")').all()
+            if not buttons:
+                # Strategy 4: Just get any button in the form
+                buttons = await form.locator('button').all()
+            
             for btn in buttons:
                 try:
                     if await btn.is_visible():
-                        class_name = await btn.get_attribute('class') or 'btn'
-                        text = await btn.inner_text()
-                        # Clean up class name for use as CSS selector
-                        class_list = class_name.split()
-                        btn_selector = '.' + '.'.join(class_list) if class_list else 'button[type="submit"]'
+                        # Get button attributes
+                        btn_id = await btn.get_attribute('id')
+                        btn_class = await btn.get_attribute('class')
+                        btn_type = await btn.get_attribute('type')
+                        btn_text = (await btn.inner_text()).strip()
+                        
+                        # Build selector - prefer ID, then class, then type
+                        if btn_id:
+                            btn_selector = f'#{btn_id}'
+                        elif btn_class:
+                            # Use the most specific class
+                            class_list = [c for c in btn_class.split() if c]
+                            if class_list:
+                                btn_selector = 'button.' + '.'.join(class_list[:3])  # Use first 3 classes max
+                            else:
+                                btn_selector = 'button[type="submit"]' if btn_type == 'submit' else 'button'
+                        elif btn_type == 'submit':
+                            btn_selector = 'button[type="submit"]'
+                        else:
+                            # Last resort: use text content
+                            btn_selector = f'button:has-text("{btn_text[:20]}")'  # Limit text length
                         
                         campos.append({
                             'tipo': 'boton',
                             'selector': btn_selector,
                             'valor': '',
-                            'texto': text.strip()
+                            'texto': btn_text
                         })
-                        print(f"  [OK] BOTÓN encontrado: {btn_selector} - {text.strip()}")
+                        print(f"  [OK] BOTÓN encontrado: {btn_selector} - '{btn_text}'")
                         break  # Only add first visible submit button
                 except Exception as e:
                     print(f"  [WARN] Error al procesar botón: {e}")
+            
+            # If no button found, add a warning
+            if not btn_selector:
+                print(f"  [WARN] No se encontró botón de envío en el formulario")
             
             # Generate YAML
             yaml_data = {
