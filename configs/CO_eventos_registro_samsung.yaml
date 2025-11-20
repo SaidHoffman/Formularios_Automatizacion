@@ -1,0 +1,21 @@
+url: https://www.claro.com.co/eventos/registro-samsung/
+campos:
+- tipo: input_char
+  selector: '49'
+  valor: Said Sigala Moráles
+  placeholder: Ingresa tu nombre.
+- tipo: input_char
+  selector: '50'
+  valor: '3001234567'
+  placeholder: Ingresa el número de teléfono.
+- tipo: input_char
+  selector: '51'
+  valor: test@example.com
+  placeholder: Ingresa un correo electrónico valido para contactarte.
+- tipo: input_char
+  selector: '52'
+  valor: test_value
+  placeholder: Ingresa la ciudad.
+- tipo: check
+  selector: cb_casillaTerminos
+  valor: true

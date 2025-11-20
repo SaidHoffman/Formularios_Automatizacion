@@ -98,6 +98,7 @@ async def fill_form(page, fields, log_entries):
                 await page.click(boton_selector, timeout=5000)
             resp = resp_info.value
             captured_status = resp.status
+            print(resp_info.value)
             log_entries.append(f"[STATUS] ESTATUS HTTP CAPTURADO: {captured_status}")
             try:
                 body = await resp.json()
@@ -127,13 +128,13 @@ async def fill_form(page, fields, log_entries):
         except Exception:
             pass
     error_sel = '.error-message'
-    success_sel = '.success-message'
+    success_sel = 'i.ico-check-circle'
     if await page.locator(error_sel).is_visible():
         err_text = await page.locator(error_sel).inner_text()
         log_entries.append(f"[ERROR] ERROR EN LA PÁGINA: {err_text.strip()}")
-    elif await page.locator(success_sel).is_visible():
-        suc_text = await page.locator(success_sel).inner_text()
-        log_entries.append(f"[SUCCESS] ÉXITO EN LA PÁGINA: {suc_text.strip()}")
+    elif await page.locator(success_sel).first.is_visible():
+        #suc_text = await page.locator(success_sel)
+        log_entries.append(f"[SUCCESS] ÉXITO EN LA PÁGINA POR NÚMERO DE PETICION DETECTADO")
     else:
         current_url = page.url
         if "gracias" in current_url.lower() or "confirmacion" in current_url.lower():

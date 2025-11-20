@@ -1,0 +1,21 @@
+url: https://www.claro.com.co/eventos/registro/
+campos:
+- tipo: input_char
+  selector: '44'
+  valor: Said Sigala Moráles
+  placeholder: Ingresa tu nombre.
+- tipo: input_char
+  selector: '45'
+  valor: '3001234567'
+  placeholder: Ingresa el número de teléfono.
+- tipo: input_char
+  selector: '46'
+  valor: test@example.com
+  placeholder: Ingresa un correo electrónico valido para contactarte.
+- tipo: input_char
+  selector: '47'
+  valor: test_value
+  placeholder: Ingresa la ciudad.
+- tipo: check
+  selector: cb_casillaTerminos
+  valor: true

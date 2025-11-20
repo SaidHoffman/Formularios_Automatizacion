@@ -50,7 +50,7 @@ def process_url(country_code, url, scan_only=False):
         print(f">> Escaneando formulario (no existe config)...")
         try:
             result = subprocess.run(
-                ['venv/Scripts/python', 'scanner.py', url, config_file],
+                ['python3', 'scanner.py', url, config_file],
                 capture_output=True,
                 text=True,
                 timeout=60
@@ -70,7 +70,7 @@ def process_url(country_code, url, scan_only=False):
         print(f">> Ejecutando automatización del formulario...")
         try:
             result = subprocess.run(
-                ['venv/Scripts/python', 'prueba.py', config_file, log_file],
+                ['python3', 'prueba.py', config_file, log_file],
                 capture_output=True,
                 text=True,
                 timeout=120
