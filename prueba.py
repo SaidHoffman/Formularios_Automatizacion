@@ -142,7 +142,7 @@ async def fill_form(page, fields, log_entries):
                     'googletagmanager.com', 'analytics.google.com', 'tiktok', 
                     'hotjar.com', 'clarity.ms', 'mixpanel.com', 'segment.com',
                     'amplitude.com', 'heap.io', 'google.com/pagead', 'google.com/ads',
-                    'ads.google.com'
+                    'ads.google.com', 'google.com/recaptcha'
                 ]
                 static_types = ['stylesheet', 'script', 'image', 'font', 'media']
                 
