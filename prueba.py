@@ -160,37 +160,51 @@ async def fill_form(page, fields, log_entries):
                 form_domain = urlparse(page.url).netloc
                 
                 # Buscar la respuesta más relevante con prioridades:
-                # 1. POST/PUT del mismo dominio
-                # 2. POST/PUT de cualquier dominio
-                # 3. Cualquier respuesta del mismo dominio
-                # 4. Cualquier otra respuesta
+                # 1. POST/PUT a dominios que contengan 'claro' (APIs de Claro)
+                # 2. POST/PUT del mismo dominio
+                # 3. POST/PUT de cualquier dominio
+                # 4. Cualquier respuesta del mismo dominio
+                # 5. Cualquier otra respuesta
                 relevant_response = None
                 
-                # Priority 1: POST/PUT from same domain
+                # Priority 1: POST/PUT to Claro APIs (clarodigital.net, claro.com, etc.)
                 for resp_data in filtered_responses:
                     resp_domain = urlparse(resp_data['url']).netloc
-                    if resp_data['method'] in ['POST', 'PUT'] and resp_domain == form_domain:
+                    if resp_data['method'] in ['POST', 'PUT'] and 'claro' in resp_domain.lower():
                         relevant_response = resp_data
+                        print(f"[DEBUG] Prioridad 1: POST/PUT a dominio Claro: {resp_domain}")
                         break
                 
-                # Priority 2: Any POST/PUT
+                # Priority 2: POST/PUT from same domain
+                if not relevant_response:
+                    for resp_data in filtered_responses:
+                        resp_domain = urlparse(resp_data['url']).netloc
+                        if resp_data['method'] in ['POST', 'PUT'] and resp_domain == form_domain:
+                            relevant_response = resp_data
+                            print(f"[DEBUG] Prioridad 2: POST/PUT mismo dominio: {resp_domain}")
+                            break
+                
+                # Priority 3: Any POST/PUT
                 if not relevant_response:
                     for resp_data in filtered_responses:
                         if resp_data['method'] in ['POST', 'PUT']:
                             relevant_response = resp_data
+                            print(f"[DEBUG] Prioridad 3: Cualquier POST/PUT")
                             break
                 
-                # Priority 3: Any response from same domain
+                # Priority 4: Any response from same domain
                 if not relevant_response:
                     for resp_data in filtered_responses:
                         resp_domain = urlparse(resp_data['url']).netloc
                         if resp_domain == form_domain:
                             relevant_response = resp_data
+                            print(f"[DEBUG] Prioridad 4: Mismo dominio")
                             break
                 
-                # Priority 4: Any other response
+                # Priority 5: Any other response
                 if not relevant_response and filtered_responses:
                     relevant_response = filtered_responses[0]
+                    print(f"[DEBUG] Prioridad 5: Primera respuesta filtrada")
                 
                 if relevant_response:
                     captured_status = relevant_response['status']
