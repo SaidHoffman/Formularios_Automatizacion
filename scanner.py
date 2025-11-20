@@ -1,6 +1,3 @@
-"""
-Form Scanner - Automatically detects form fields and generates YAML configs
-"""
 import asyncio
 import yaml
 import re
@@ -128,9 +125,9 @@ async def scan_form(url, output_yaml_path):
                     elif 'email' in lower_hints or 'correo' in lower_hints:
                         default_value = 'test@example.com'
                     elif 'name' in lower_hints or 'nombre' in lower_hints:
-                        default_value = 'Juan Pérez'
+                        default_value = 'Said Sigala Moráles'
                     elif 'cedula' in lower_hints or 'documento' in lower_hints or 'id' in lower_hints:
-                        default_value = '123456789'
+                        default_value = '5578033729'
                     else:
                         default_value = 'test_value'
                     

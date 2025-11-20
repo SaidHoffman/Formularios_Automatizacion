@@ -1,0 +1,31 @@
+url: https://www.claro.com.co/personas/contratar-servicios-hogar/
+campos:
+- tipo: select
+  selector: .c13Form select:nth-child(1)
+  valor: Tripleplay
+  opciones:
+  - Tripleplay
+  - Tv satelital
+  - Internet
+  - Televisión
+  - TriplePlay + Cámara/Sensor
+- tipo: select
+  selector: .c13Form select:nth-child(2)
+  valor: Acacias
+  opciones:
+  - Acacias
+  - Aguachica
+  - Alcala
+  - Amaga
+  - Amaime-Elplacer
+- tipo: input_char
+  selector: phoneNumber
+  valor: '3001234567'
+  placeholder: Número fijo o celular
+- tipo: check
+  selector: auth
+  valor: true
+- tipo: boton
+  selector: .btn.btnPrimario
+  valor: ''
+  texto: Continuar

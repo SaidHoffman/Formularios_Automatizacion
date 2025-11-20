@@ -1,0 +1,30 @@
+url: https://www.claro.com.co/personas/servicios/innovacion/vehiculo-conectado/moto-conectada/
+campos:
+- tipo: select
+  selector: .c13Form select:nth-child(1)
+  valor: Barranquilla
+  opciones:
+  - Barranquilla
+  - Bogota
+  - Bucaramanga
+  - Cali
+  - Medellín
+- tipo: input_char
+  selector: nombres
+  valor: Said Sigala Moráles
+  placeholder: Nombre y Apellido
+- tipo: input_char
+  selector: phoneNumber
+  valor: '3001234567'
+  placeholder: Número fijo o celular
+- tipo: input_char
+  selector: email
+  valor: test@example.com
+  placeholder: correo@mail.com
+- tipo: check
+  selector: auth
+  valor: true
+- tipo: boton
+  selector: .btn.btnPrimario
+  valor: ''
+  texto: Continuar

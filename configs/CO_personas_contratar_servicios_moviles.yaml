@@ -1,0 +1,28 @@
+url: https://www.claro.com.co/personas/contratar-servicios-moviles/
+campos:
+- tipo: select
+  selector: .c13Form select:nth-child(1)
+  valor: Portación Postpago
+  opciones:
+  - Portación Postpago
+  - Planes Postpago
+- tipo: select
+  selector: .c13Form select:nth-child(2)
+  valor: Acacias
+  opciones:
+  - Acacias
+  - Aguachica
+  - Alcala
+  - Amaga
+  - Amaime-Elplacer
+- tipo: input_char
+  selector: phoneNumber
+  valor: '3001234567'
+  placeholder: Número fijo o celular
+- tipo: check
+  selector: auth
+  valor: true
+- tipo: boton
+  selector: .btn.btnPrimario
+  valor: ''
+  texto: Continuar

@@ -1,9 +1,9 @@
 --- REGISTRO DE FORMULARIO CLARO ---
-URL de Prueba: https://www.claro.com.co/personas/contratar-servicios-hogar/
-Hora de inicio: 2025-11-20 11:37:03
+URL de Prueba: https://www.claro.com.co/personas/contratar-servicios-moviles/
+Hora de inicio: 2025-11-20 11:38:05
 
 --- ESTADO DEL LLENADO DE CAMPOS ---
-[1] Tipo: select | Selector: '.c13Form select:nth-child(1)' | Valor: 'Tripleplay' | Estado: OK (Seleccionado por label)
+[1] Tipo: select | Selector: '.c13Form select:nth-child(1)' | Valor: 'Portación Postpago' | Estado: OK (Seleccionado por label)
 [2] Tipo: select | Selector: '.c13Form select:nth-child(2)' | Valor: 'Acacias' | Estado: WARN (Select no visible: Page.wait_for_selector: Timeout 15000ms exceeded.
 Call log:
   - waiting for locator(".c13Form select:nth-child(2)") to be visible
@@ -18,6 +18,6 @@ Call log:
 
 --- RESULTADO DEL ENVÍO ---
 [ERROR] Error al hacer click o capturar respuesta: 'coroutine' object has no attribute 'status'
-ℹ️ URL ACTUAL: https://www.claro.com.co/personas/contratar-servicios-hogar/
+ℹ️ URL ACTUAL: https://www.claro.com.co/personas/contratar-servicios-moviles/
 *** RESULTADO FINAL: ID=NO_ENCONTRADO | STATUS=N/A ***
 ---------------------------------

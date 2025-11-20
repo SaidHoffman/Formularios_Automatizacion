@@ -1,6 +1,6 @@
 --- REGISTRO DE FORMULARIO CLARO ---
 URL de Prueba: https://www.claro.com.co/personas/compra-celulares-y-tecnologia/
-Hora de inicio: 2025-11-19 15:37:51
+Hora de inicio: 2025-11-20 11:37:34
 
 --- ESTADO DEL LLENADO DE CAMPOS ---
 [1] Tipo: select | Selector: '.c13Form select:nth-child(1)' | Valor: 'Tecnología y celulares' | Estado: OK (Seleccionado por label)
